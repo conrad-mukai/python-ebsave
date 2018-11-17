@@ -15,13 +15,13 @@ def run(argv):
     args = parse_cmdline(argv)
     setup_logging(args.logfile, args.loglevel)
     try:
-        LOGGER.debug("starting {}".format(PROGRAM_NAME))
+        LOGGER.debug("starting %s", PROGRAM_NAME)
         _start(args)
     except Exception as e:
         LOGGER.exception(e)
         return 1
     finally:
-        LOGGER.debug("finished {}".format(PROGRAM_NAME))
+        LOGGER.debug("finished %s", PROGRAM_NAME)
     return 0
 
 

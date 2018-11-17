@@ -94,3 +94,29 @@ The `--retention` and `--min-count` options control the retention policy. At
 least `min-count` snapshots per volume will be retained regardless of age. Once
 the number of snapshots per volume exceeds `min-count` then any snapshots older
 than `retention` days will be deleted.
+
+## IAM Permissions
+
+The principal running the script needs to be granted something like the
+following IAM policy:
+
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "backup",
+                "Effect": "Allow",
+                "Action": [
+                    "ec2:DescribeVolumes",
+                    "ec2:DescribeSnapshots",
+                    "ec2:DeleteSnapshot",
+                    "ec2:CreateTags",
+                    "ec2:CreateSnapshot"
+                ],
+                "Resource": "*"
+            }
+        ]
+    }
+
+Running with the `dryrun` option enabled will check if the script can perform
+the desired operations.

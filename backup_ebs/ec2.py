@@ -66,8 +66,18 @@ def delete_snapshots(ec2, volume_ids, retention, min_count, dryrun):
     old_snapshots = _filter_snapshots_to_delete(response, retention, min_count)
     for snapshot_id in old_snapshots:
         LOGGER.info("deleting snapshot %s", snapshot_id)
-        if not dryrun:
-            ec2.delete_snapshot(SnapshotId=snapshot_id)
+        try:
+            ec2.delete_snapshot(SnapshotId=snapshot_id, DryRun=dryrun)
+        except botocore.exceptions.ClientError as e:
+            if dryrun:
+                if 'DryRunOperation' in str(e):
+                    LOGGER.info("you have permission to delete snapshot %s",
+                                snapshot_id)
+                else:
+                    LOGGER.error("you don't have permission to delete "
+                                 "snapshot %s", snapshot_id)
+            else:
+                raise e
 
 
 def _filter_snapshots_to_delete(response, retention, min_count):
@@ -84,8 +94,8 @@ def _filter_snapshots_to_delete(response, retention, min_count):
     old_snapshot_count = 0
     for volume_id, snapshots in snapshot_ids.items():
         if len(snapshots) <= min_count:
-            LOGGER.debug("retaining all snapshots for {}: number of snapshots "
-                         "is less than {}".format(volume_id, min_count))
+            LOGGER.debug("retaining all snapshots for %s: number of snapshots "
+                         "is less than %d", volume_id, min_count)
             continue
         newest_snapshots = copy.copy(initial_newest_snapshots)
         for snapshot in snapshots:
@@ -105,13 +115,13 @@ def _filter_snapshots_to_delete(response, retention, min_count):
                 old_snapshots.append(snapshot[0])
         next_old_snapshot_count = len(old_snapshots)
         if next_old_snapshot_count > old_snapshot_count:
-            LOGGER.debug("deleting {} snapshots for {}"
-                         .format(next_old_snapshot_count-old_snapshot_count,
-                                 volume_id))
+            LOGGER.debug("deleting %d snapshot(s) for %s",
+                         next_old_snapshot_count-old_snapshot_count,
+                         volume_id)
             old_snapshot_count = next_old_snapshot_count
         else:
-            LOGGER.debug("retaining all snapshots for {}: no snapshot older "
-                         "than {} days".format(volume_id, retention))
+            LOGGER.debug("retaining all snapshots for %s: no snapshot older "
+                         "than %d days", volume_id, retention)
     return old_snapshots
 
 
@@ -120,8 +130,8 @@ def create_snapshots(ec2, hostname, volume_ids, dryrun):
     for volume_id, device in volume_ids.items():
         tag = "{}:{}:{}".format(hostname, device,
                                 datetime.utcnow().strftime(_TIMESTAMP_FORMAT))
-        LOGGER.info("creating snapshot {} for {}".format(tag, volume_id))
-        if not dryrun:
+        LOGGER.info("creating snapshot %s for %s", tag, volume_id)
+        try:
             ec2.create_snapshot(
                 Description="snapshot created by {}".format(PROGRAM_NAME),
                 VolumeId=volume_id,
@@ -135,8 +145,19 @@ def create_snapshots(ec2, hostname, volume_ids, dryrun):
                             }
                         ]
                     }
-                ]
+                ],
+                DryRun=dryrun
             )
+        except botocore.exceptions.ClientError as e:
+            if dryrun:
+                if 'DryRunOperation' in str(e):
+                    LOGGER.info("you have permission to create snapshot %s",
+                                tag)
+                else:
+                    LOGGER.error("you don't have permission to create "
+                                 "snapshot %s", tag)
+            else:
+                raise e
 
 
 def _get_hostname(hostname):
