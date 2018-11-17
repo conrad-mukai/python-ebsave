@@ -92,7 +92,7 @@ def _filter_snapshots_to_delete(response, retention, min_count):
                 if snapshot[1] > newest_snapshots[i][1]:
                     append_to_old = False
                     kth_snapshot = newest_snapshots[-1]
-                    for j in range(i+1, min_count):
+                    for j in range(min_count-1, i, -1):
                         newest_snapshots[j] = newest_snapshots[j-1]
                     newest_snapshots[i] = snapshot
                     if kth_snapshot[0] is not None \
