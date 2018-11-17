@@ -118,5 +118,5 @@ following IAM policy:
         ]
     }
 
-Running with the `dryrun` option enabled will check if the script can perform
+Running with the `--dryrun` option enabled will check if the script can perform
 the desired operations.
