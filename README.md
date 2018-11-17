@@ -9,7 +9,6 @@ EC2 instance. It not only creates snapshots, but deletes those that are older
 than a prescribed retention policy. The primary use case for this script is to
 run as a cronjob on an AWS instance. Used this way it will back up volumes that
 are attached to the instance on which the script is running on a regular basis.
-
 The script can also be run off-instance, such as from another AWS instance or a
 remote workstation with access privileges to the AWS account.
 
