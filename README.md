@@ -14,7 +14,7 @@ remote workstation with access privileges to the AWS account.
 
 ## Command Line Syntax
 
-    The command line syntax for the script is as follows:
+The command line syntax for the script is as follows:
     
     usage: backup-ebs [-h] [-l LOGFILE] [-L LOGLEVEL] [-R REGION] [-r RETENTION]
                       [-m MIN_COUNT] [-i INSTANCE_ID] [-H HOSTNAME]
