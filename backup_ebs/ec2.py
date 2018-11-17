@@ -17,6 +17,7 @@ from .constants import PROGRAM_NAME
 # 3rd party imports
 import boto3
 import botocore
+import pytz
 
 # constants
 _TIMESTAMP_FORMAT = '%Y%m%dT%H%M%S'
@@ -75,7 +76,8 @@ def _filter_snapshots_to_delete(response, retention, min_count):
         snapshot_ids[snapshot['VolumeId']].append((snapshot['SnapshotId'],
                                                    snapshot['StartTime']))
     old_snapshots = []
-    initial_newest_snapshots = [(None, datetime.min)] * min_count
+    initial_newest_snapshots \
+        = [(None, pytz.utc.localize(datetime.min))] * min_count
     indices = list(range(min_count))
     t = datetime.now(timezone.utc)
     max_age = timedelta(days=retention)
