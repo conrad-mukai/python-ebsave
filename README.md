@@ -38,8 +38,8 @@ The command line syntax for the script is as follows:
       -r RETENTION, --retention RETENTION
                             retention period in days (default is 7)
       -m MIN_COUNT, --min-count MIN_COUNT
-                            minimum of snapshots per volume to retain regardless
-                            of age (default is 5)
+                            minimum number of snapshots per volume to retain
+                            regardless of age (default is 5)
       -i INSTANCE_ID, --instance-id INSTANCE_ID
                             ID for instance to which volumes are attached (default
                             is instance on which script is being run)
