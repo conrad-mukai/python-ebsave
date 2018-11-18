@@ -52,6 +52,29 @@ def get_volume_ids(ec2, instance_id, skip):
             if a['Device'] not in skip}
 
 
+def create_snapshots(ec2, hostname, volume_ids, dryrun):
+    hostname = _get_hostname(hostname)
+    description = "snapshot created by {}".format(PROGRAM_NAME)
+    for volume_id, device in volume_ids.items():
+        tag = "{}:{}:{}".format(hostname, device,
+                                datetime.utcnow().strftime(_TIMESTAMP_FORMAT))
+        LOGGER.info("creating snapshot %s for %s", tag, volume_id)
+        _create_snapshot(ec2, dryrun, tag,
+                         Description=description,
+                         VolumeId=volume_id,
+                         TagSpecifications=[
+                             {
+                                 'ResourceType': 'snapshot',
+                                 'Tags': [
+                                     {
+                                         'Key': 'Name',
+                                         'Value': tag
+                                     }
+                                 ]
+                             }
+                         ])
+
+
 def delete_snapshots(ec2, volume_ids, retention, min_count, dryrun):
     LOGGER.debug("searching for old snapshots from volume(s) %s to delete",
                  ",".join(volume_ids))
@@ -99,29 +122,6 @@ def _filter_snapshots_to_delete(response, retention, min_count):
     return old_snapshots
 
 
-def create_snapshots(ec2, hostname, volume_ids, dryrun):
-    hostname = _get_hostname(hostname)
-    description = "snapshot created by {}".format(PROGRAM_NAME)
-    for volume_id, device in volume_ids.items():
-        tag = "{}:{}:{}".format(hostname, device,
-                                datetime.utcnow().strftime(_TIMESTAMP_FORMAT))
-        LOGGER.info("creating snapshot %s for %s", tag, volume_id)
-        _create_snapshot(ec2, dryrun, tag,
-                         Description=description,
-                         VolumeId=volume_id,
-                         TagSpecifications=[
-                             {
-                                 'ResourceType': 'snapshot',
-                                 'Tags': [
-                                     {
-                                         'Key': 'Name',
-                                         'Value': tag
-                                     }
-                                 ]
-                             }
-                         ])
-
-
 def _dryrun(action):
     def wrapper(f):
         def inner(ec2, dryrun, snapshot, **kwargs):
@@ -141,9 +141,11 @@ def _dryrun(action):
     return wrapper
 
 
-@_dryrun('delete')
-def _delete_snapshot(ec2, dryrun, **kwargs):
-    return ec2.delete_snapshot(DryRun=dryrun, **kwargs)
+def _get_hostname(hostname):
+    if hostname is None:
+        return socket.gethostname().split('.')[0]
+    else:
+        return hostname
 
 
 @_dryrun('create')
@@ -151,8 +153,6 @@ def _create_snapshot(ec2, dryrun, **kwargs):
     return ec2.create_snapshot(DryRun=dryrun, **kwargs)
 
 
-def _get_hostname(hostname):
-    if hostname is None:
-        return socket.gethostname().split('.')[0]
-    else:
-        return hostname
+@_dryrun('delete')
+def _delete_snapshot(ec2, dryrun, **kwargs):
+    return ec2.delete_snapshot(DryRun=dryrun, **kwargs)

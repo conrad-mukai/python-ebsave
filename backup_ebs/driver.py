@@ -35,6 +35,6 @@ def _start(args):
     if len(volume_ids) == 0:
         LOGGER.info("no volumes to backup")
         return
+    create_snapshots(ec2, args.hostname, volume_ids, args.dryrun)
     delete_snapshots(ec2, volume_ids, args.retention, args.min_count,
                      args.dryrun)
-    create_snapshots(ec2, args.hostname, volume_ids, args.dryrun)
