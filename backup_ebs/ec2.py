@@ -6,7 +6,7 @@ AWS EC2 API calls.
 # system imports
 from datetime import datetime, timezone, timedelta
 import collections
-import copy
+import heapq
 import socket
 
 # project imports
@@ -75,9 +75,6 @@ def _filter_snapshots_to_delete(response, retention, min_count):
         snapshot_ids[snapshot['VolumeId']].append((snapshot['SnapshotId'],
                                                    snapshot['StartTime']))
     old_snapshots = []
-    initial_newest_snapshots \
-        = [(None, pytz.utc.localize(datetime.min))] * min_count
-    indices = list(range(min_count))
     t = datetime.now(timezone.utc)
     max_age = timedelta(days=retention)
     old_snapshot_count = 0
@@ -86,22 +83,10 @@ def _filter_snapshots_to_delete(response, retention, min_count):
             LOGGER.debug("retaining all snapshots for %s: number of snapshots "
                          "is less than %d", volume_id, min_count)
             continue
-        newest_snapshots = copy.copy(initial_newest_snapshots)
-        for snapshot in snapshots:
-            append_to_old = True
-            for i in indices:
-                if snapshot[1] > newest_snapshots[i][1]:
-                    append_to_old = False
-                    kth_snapshot = newest_snapshots[-1]
-                    for j in range(min_count-1, i, -1):
-                        newest_snapshots[j] = newest_snapshots[j-1]
-                    newest_snapshots[i] = snapshot
-                    if kth_snapshot[0] is not None \
-                       and t - kth_snapshot[1] > max_age:
-                        old_snapshots.append(kth_snapshot[0])
-                    break
-            if append_to_old and t - snapshot[1] > max_age:
-                old_snapshots.append(snapshot[0])
+        newest_snapshots = set(heapq.nlargest(min_count, snapshots,
+                                              key=lambda x: x[1]))
+        old_snapshots += [s[0] for s in snapshots
+                          if s not in newest_snapshots and t - s[1] > max_age]
         next_old_snapshot_count = len(old_snapshots)
         if next_old_snapshot_count > old_snapshot_count:
             LOGGER.debug("found %d snapshot(s) for %s to delete",
@@ -137,13 +122,6 @@ def create_snapshots(ec2, hostname, volume_ids, dryrun):
                          ])
 
 
-def _get_hostname(hostname):
-    if hostname is None:
-        return socket.gethostname().split('.')[0]
-    else:
-        return hostname
-
-
 def _dryrun(action):
     def wrapper(f):
         def inner(ec2, dryrun, snapshot, **kwargs):
@@ -171,3 +149,10 @@ def _delete_snapshot(ec2, dryrun, **kwargs):
 @_dryrun('create')
 def _create_snapshot(ec2, dryrun, **kwargs):
     return ec2.create_snapshot(DryRun=dryrun, **kwargs)
+
+
+def _get_hostname(hostname):
+    if hostname is None:
+        return socket.gethostname().split('.')[0]
+    else:
+        return hostname
