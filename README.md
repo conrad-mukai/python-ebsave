@@ -61,7 +61,7 @@ If the script is run on an AWS instance with no options and with no local AWS
 configuration (i.e., `~/.aws/config` or `AWS*` environment variables), then it will
 determine the region and instance ID from
 [instance metadata](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
-and proceed to manage snapshots for all volumes attached to the device. The
+and proceed to manage snapshots for all volumes attached to the instance. The
 hostname used to tag snapshots will be taken from the local OS. If you don't
 want to create snapshots for specific volumes then use the `--skip` option. An
 example this is:
