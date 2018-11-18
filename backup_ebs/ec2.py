@@ -165,9 +165,9 @@ def _dryrun(action):
 
 @_dryrun('delete')
 def _delete_snapshot(ec2, dryrun, **kwargs):
-    ec2.delete_snapshot(DryRun=dryrun, **kwargs)
+    return ec2.delete_snapshot(DryRun=dryrun, **kwargs)
 
 
 @_dryrun('create')
 def _create_snapshot(ec2, dryrun, **kwargs):
-    ec2.create_snapshot(DryRun=dryrun, **kwargs)
+    return ec2.create_snapshot(DryRun=dryrun, **kwargs)
