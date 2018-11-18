@@ -104,7 +104,7 @@ def _filter_snapshots_to_delete(response, retention, min_count):
     for volume_id, snapshots in snapshot_ids.items():
         if len(snapshots) <= min_count:
             LOGGER.debug("retaining all snapshots for %s: number of snapshots "
-                         "is less than %d", volume_id, min_count)
+                         "is less than or equal to %d", volume_id, min_count)
             continue
         newest_snapshots = set(heapq.nlargest(min_count, snapshots,
                                               key=lambda x: x[1]))
