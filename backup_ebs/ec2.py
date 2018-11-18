@@ -17,7 +17,6 @@ from .constants import PROGRAM_NAME
 # 3rd party imports
 import boto3
 import botocore
-import pytz
 
 # constants
 _TIMESTAMP_FORMAT = '%Y%m%dT%H%M%S'
