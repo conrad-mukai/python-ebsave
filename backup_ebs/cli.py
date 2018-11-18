@@ -33,8 +33,8 @@ def parse_cmdline(argv):
                              .format(DEFAULT_RETENTION_PERIOD))
     parser.add_argument('-m', '--min-count', type=int,
                         default=DEFAULT_MIN_COUNT,
-                        help="minimum number of snapshots per volume to retain "
-                             "regardless of age (default is {})"
+                        help="minimum number of most recent snapshots per "
+                             "volume to retain (default is {})"
                              .format(DEFAULT_MIN_COUNT))
     parser.add_argument('-i', '--instance-id',
                         help="ID for instance to which volumes are attached "

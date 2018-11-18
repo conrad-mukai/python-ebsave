@@ -38,8 +38,8 @@ The command line syntax for the script is as follows:
       -r RETENTION, --retention RETENTION
                             retention period in days (default is 7)
       -m MIN_COUNT, --min-count MIN_COUNT
-                            minimum number of snapshots per volume to retain
-                            regardless of age (default is 1)
+                            minimum number of most recent snapshots per volume to
+                            retain (default is 1)
       -i INSTANCE_ID, --instance-id INSTANCE_ID
                             ID for instance to which volumes are attached (default
                             is instance on which script is being run)
@@ -91,9 +91,9 @@ not have to be specified. An example of this is:
 ## Retention Policy
 
 The `--retention` and `--min-count` options control the retention policy. At
-least `min-count` snapshots per volume will be retained regardless of age. Once
-the number of snapshots per volume exceeds `min-count` then any snapshots older
-than `retention` days will be deleted.
+least `min-count` of the most recent snapshots per volume will be retained.
+Once the number of snapshots per volume exceeds `min-count` then any snapshots
+older than `retention` days will be deleted.
 
 ## IAM Permissions
 
