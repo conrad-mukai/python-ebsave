@@ -66,18 +66,7 @@ def delete_snapshots(ec2, volume_ids, retention, min_count, dryrun):
     old_snapshots = _filter_snapshots_to_delete(response, retention, min_count)
     for snapshot_id in old_snapshots:
         LOGGER.info("deleting snapshot %s", snapshot_id)
-        try:
-            ec2.delete_snapshot(SnapshotId=snapshot_id, DryRun=dryrun)
-        except botocore.exceptions.ClientError as e:
-            if dryrun:
-                if 'DryRunOperation' in str(e):
-                    LOGGER.info("you have permission to delete snapshot %s",
-                                snapshot_id)
-                else:
-                    LOGGER.error("you don't have permission to delete "
-                                 "snapshot %s", snapshot_id)
-            else:
-                raise e
+        _delete_snapshot(ec2, dryrun, snapshot_id, SnapshotId=snapshot_id)
 
 
 def _filter_snapshots_to_delete(response, retention, min_count):
@@ -115,7 +104,7 @@ def _filter_snapshots_to_delete(response, retention, min_count):
                 old_snapshots.append(snapshot[0])
         next_old_snapshot_count = len(old_snapshots)
         if next_old_snapshot_count > old_snapshot_count:
-            LOGGER.debug("deleting %d snapshot(s) for %s",
+            LOGGER.debug("found %d snapshot(s) for %s to delete",
                          next_old_snapshot_count-old_snapshot_count,
                          volume_id)
             old_snapshot_count = next_old_snapshot_count
@@ -127,37 +116,25 @@ def _filter_snapshots_to_delete(response, retention, min_count):
 
 def create_snapshots(ec2, hostname, volume_ids, dryrun):
     hostname = _get_hostname(hostname)
+    description = "snapshot created by {}".format(PROGRAM_NAME)
     for volume_id, device in volume_ids.items():
         tag = "{}:{}:{}".format(hostname, device,
                                 datetime.utcnow().strftime(_TIMESTAMP_FORMAT))
         LOGGER.info("creating snapshot %s for %s", tag, volume_id)
-        try:
-            ec2.create_snapshot(
-                Description="snapshot created by {}".format(PROGRAM_NAME),
-                VolumeId=volume_id,
-                TagSpecifications=[
-                    {
-                        'ResourceType': 'snapshot',
-                        'Tags': [
-                            {
-                                'Key': 'Name',
-                                'Value': tag
-                            }
-                        ]
-                    }
-                ],
-                DryRun=dryrun
-            )
-        except botocore.exceptions.ClientError as e:
-            if dryrun:
-                if 'DryRunOperation' in str(e):
-                    LOGGER.info("you have permission to create snapshot %s",
-                                tag)
-                else:
-                    LOGGER.error("you don't have permission to create "
-                                 "snapshot %s", tag)
-            else:
-                raise e
+        _create_snapshot(ec2, dryrun, tag,
+                         Description=description,
+                         VolumeId=volume_id,
+                         TagSpecifications=[
+                             {
+                                 'ResourceType': 'snapshot',
+                                 'Tags': [
+                                     {
+                                         'Key': 'Name',
+                                         'Value': tag
+                                     }
+                                 ]
+                             }
+                         ])
 
 
 def _get_hostname(hostname):
@@ -165,3 +142,32 @@ def _get_hostname(hostname):
         return socket.gethostname().split('.')[0]
     else:
         return hostname
+
+
+def _dryrun(action):
+    def wrapper(f):
+        def inner(ec2, dryrun, snapshot, **kwargs):
+            try:
+                return f(ec2, dryrun, **kwargs)
+            except botocore.exceptions.ClientError as e:
+                if dryrun:
+                    if 'DryRunOperation' in str(e):
+                        LOGGER.info("you have permission to %s snapshot %s",
+                                    action, snapshot)
+                    else:
+                        LOGGER.error("you don't have permission to %s "
+                                     "snapshot %s", action, snapshot)
+                else:
+                    raise e
+        return inner
+    return wrapper
+
+
+@_dryrun('delete')
+def _delete_snapshot(ec2, dryrun, **kwargs):
+    ec2.delete_snapshot(DryRun=dryrun, **kwargs)
+
+
+@_dryrun('create')
+def _create_snapshot(ec2, dryrun, **kwargs):
+    ec2.create_snapshot(DryRun=dryrun, **kwargs)
