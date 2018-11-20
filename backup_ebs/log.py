@@ -20,7 +20,10 @@ DEFAULT_LOG_LEVEL = logging.getLevelName(logging.INFO)
 
 # global variables
 LOGGER = logging.getLogger(PROGRAM_NAME)
+
+# make some modules quieter
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 
 def setup_logging(logfile, loglevel):
