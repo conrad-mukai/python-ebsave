@@ -12,13 +12,17 @@ are attached to the instance on which the script is running on a regular basis.
 The script can also be run off-instance, such as from another AWS instance or a
 remote workstation with access privileges to the AWS account.
 
+## Requirements
+
+The script requires Python3.
+
 ## Command Line Syntax
 
 The command line syntax for the script is as follows:
     
-    usage: backup-ebs [-h] [-l LOGFILE] [-L LOGLEVEL] [-R REGION] [-r RETENTION]
-                      [-m MIN_COUNT] [-i INSTANCE_ID] [-H HOSTNAME]
-                      [-s [SKIP [SKIP ...]]] [-d]
+    usage: ebsave [-h] [-l LOGFILE] [-L LOGLEVEL] [-R REGION] [-r RETENTION]
+                  [-m MIN_COUNT] [-i INSTANCE_ID] [-H HOSTNAME]
+                  [-s [SKIP [SKIP ...]]] [-d]
     
     backup EBS volumes
     
@@ -66,7 +70,7 @@ hostname used to tag snapshots will be taken from the local OS. If you don't
 want to create snapshots for specific volumes then use the `--skip` option. An
 example this is:
 
-    backup-ebs -s /dev/xvda
+    ebsave -s /dev/xvda
 
 ### Run on Remote Instance
 
@@ -77,7 +81,7 @@ in the same region as the instances being backed up to take advantage of the
 instance metadata. Otherwise, use the `--region` option to specify the region
 in which the backed up instance resides. An example of this is:
 
-    backup-ebs -H jenkins-master -i i-0ce03cbe16e0a87e1 -r us-west-2 -s /dev/xvda
+    ebsave -H jenkins-master -i i-0ce03cbe16e0a87e1 -r us-west-2 -s /dev/xvda
 
 ### Run on Workstation
 
@@ -86,7 +90,7 @@ to an AWS account. In that case you must specify the `--instance-id` and
 `--hostname` options. The region is part of your local configuration so it does
 not have to be specified. An example of this is:
 
-    backup-ebs -H jenkins-master -i i-0ce03cbe16e0a87e1 -s /dev/xvda
+    ebsave-ebs -H jenkins-master -i i-0ce03cbe16e0a87e1 -s /dev/xvda
 
 ## Retention Policy
 
