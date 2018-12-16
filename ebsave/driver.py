@@ -31,7 +31,7 @@ def _start(args):
     else:
         instance_id = args.instance_id
     ec2 = get_client(args.region)
-    volume_ids = get_volume_ids(ec2, instance_id, args.skip)
+    volume_ids = get_volume_ids(ec2, instance_id, args.devices)
     if len(volume_ids) == 0:
         LOGGER.info("no volumes to backup")
         return

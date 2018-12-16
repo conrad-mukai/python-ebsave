@@ -33,7 +33,7 @@ def get_client(region):
         return boto3.client('ec2', region_name=region)
 
 
-def get_volume_ids(ec2, instance_id, skip):
+def get_volume_ids(ec2, instance_id, devices):
     LOGGER.debug("getting volume IDs for %s", instance_id)
     response = ec2.describe_volumes(
         Filters=[
@@ -48,7 +48,7 @@ def get_volume_ids(ec2, instance_id, skip):
     return {a['VolumeId']: a['Device']
             for v in response['Volumes']
             for a in v['Attachments']
-            if a['Device'] not in skip}
+            if len(devices) == 0 or a['Device'] in devices}
 
 
 def create_snapshots(ec2, hostname, volume_ids, dryrun):

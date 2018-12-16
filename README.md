@@ -22,7 +22,7 @@ The command line syntax for the script is as follows:
     
     usage: ebsave [-h] [-l LOGFILE] [-L LOGLEVEL] [-R REGION] [-r RETENTION]
                   [-m MIN_COUNT] [-i INSTANCE_ID] [-H HOSTNAME]
-                  [-s [SKIP [SKIP ...]]] [-d]
+                  [-d [DEVICE [DEVICE ...]]] [-D]
     
     backup EBS volumes
     
@@ -50,10 +50,10 @@ The command line syntax for the script is as follows:
       -H HOSTNAME, --hostname HOSTNAME
                             name to tag snapshots with (default is the system
                             hostname)
-      -s [SKIP [SKIP ...]], --skip [SKIP [SKIP ...]]
-                            devices to skip (e.g., /dev/xvda - default is to not
-                            skip any)
-      -d, --dryrun          flag to enable dry run mode
+      -d [DEVICE [DEVICE ...]], --devices [DEVICE [DEVICE ...]]
+                            devices to include (e.g., /dev/xvdf - default is to
+                            include all devices)
+      -D, --dryrun          flag to enable dry run mode
 
 ## Use Cases
 
@@ -66,11 +66,11 @@ configuration (i.e., `~/.aws/config` or `AWS*` environment variables), then it w
 determine the region and instance ID from
 [instance metadata](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
 and proceed to manage snapshots for all volumes attached to the instance. The
-hostname used to tag snapshots will be taken from the local OS. If you don't
-want to create snapshots for specific volumes then use the `--skip` option. An
-example this is:
+hostname used to tag snapshots will be taken from the local OS. If you want to
+create snapshots for specific volumes (as opposed to all attached volumes) then
+use the `--devices` option. An example this is:
 
-    ebsave -s /dev/xvda
+    ebsave -d /dev/xvdf
 
 ### Run on Remote Instance
 
@@ -81,7 +81,7 @@ in the same region as the instances being backed up to take advantage of the
 instance metadata. Otherwise, use the `--region` option to specify the region
 in which the backed up instance resides. An example of this is:
 
-    ebsave -H jenkins-master -i i-0ce03cbe16e0a87e1 -r us-west-2 -s /dev/xvda
+    ebsave -H jenkins-master -i i-0ce03cbe16e0a87e1 -r us-west-2 -d /dev/xvdf
 
 ### Run on Workstation
 
@@ -90,7 +90,7 @@ to an AWS account. In that case you must specify the `--instance-id` and
 `--hostname` options. The region is part of your local configuration so it does
 not have to be specified. An example of this is:
 
-    ebsave -H jenkins-master -i i-0ce03cbe16e0a87e1 -s /dev/xvda
+    ebsave -H jenkins-master -i i-0ce03cbe16e0a87e1 -d /dev/xvdf
 
 ## Retention Policy
 
@@ -122,5 +122,5 @@ following IAM policy:
         ]
     }
 
-Running with the `--dryrun` option enabled will check if the script can perform
-the desired operations.
+Running with the `--dryrun` option will check if the script can perform the
+desired operations.

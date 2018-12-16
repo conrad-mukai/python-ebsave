@@ -43,9 +43,10 @@ def parse_cmdline(argv):
     parser.add_argument('-H', '--hostname',
                         help="name to tag snapshots with (default is the "
                              "system hostname)")
-    parser.add_argument('-s', '--skip', nargs='*', default=[],
-                        help="devices to skip (e.g., /dev/xvda - default is "
-                             "to not skip any)")
-    parser.add_argument('-d', '--dryrun', action='store_true',
+    parser.add_argument('-d', '--devices', nargs='*', default=[],
+                        metavar='DEVICE',
+                        help="devices to include (e.g., /dev/xvdf - default is "
+                             "to include all devices)")
+    parser.add_argument('-D', '--dryrun', action='store_true',
                         help="flag to enable dry run mode")
     return parser.parse_args(argv[1:])
