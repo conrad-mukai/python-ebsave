@@ -90,7 +90,7 @@ to an AWS account. In that case you must specify the `--instance-id` and
 `--hostname` options. The region is part of your local configuration so it does
 not have to be specified. An example of this is:
 
-    ebsave-ebs -H jenkins-master -i i-0ce03cbe16e0a87e1 -s /dev/xvda
+    ebsave -H jenkins-master -i i-0ce03cbe16e0a87e1 -s /dev/xvda
 
 ## Retention Policy
 
