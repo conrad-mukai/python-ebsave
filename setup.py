@@ -8,14 +8,15 @@ from setuptools import setup
 
 # packaging
 setup(name='ebsave',
-      version='0.1.0',
+      version='0.1.1',
       author='Conrad Mukai',
-      author_email='cmukai@cisco.com',
+      author_email='conrad@mukai-home.net',
       url='https://github.com/conrad-mukai/python-ebsave',
       packages=['ebsave'],
       install_requires=[
           'boto3',
           'requests'
       ],
-      entry_points={'console_scripts': ['ebsave=ebsave:main']}
+      entry_points={'console_scripts': ['ebsave=ebsave:main']},
+      zip_safe=False
 )
