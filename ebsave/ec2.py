@@ -58,20 +58,8 @@ def create_snapshots(ec2, hostname, volume_ids, dryrun):
         tag = "{}:{}:{}".format(hostname, device,
                                 datetime.utcnow().strftime(_TIMESTAMP_FORMAT))
         LOGGER.info("creating snapshot %s for %s", tag, volume_id)
-        _create_snapshot(ec2, dryrun, tag,
-                         Description=description,
-                         VolumeId=volume_id,
-                         TagSpecifications=[
-                             {
-                                 'ResourceType': 'snapshot',
-                                 'Tags': [
-                                     {
-                                         'Key': 'Name',
-                                         'Value': tag
-                                     }
-                                 ]
-                             }
-                         ])
+        _create_snapshot(ec2, dryrun, tag, Description=description,
+                         VolumeId=volume_id)
 
 
 def delete_snapshots(ec2, volume_ids, retention, min_count, dryrun):
@@ -125,7 +113,7 @@ def _dryrun(action):
     def wrapper(f):
         def inner(ec2, dryrun, snapshot, **kwargs):
             try:
-                return f(ec2, dryrun, **kwargs)
+                return f(ec2, dryrun, snapshot, **kwargs)
             except botocore.exceptions.ClientError as e:
                 if dryrun:
                     if 'DryRunOperation' in str(e):
@@ -148,10 +136,19 @@ def _get_hostname(hostname):
 
 
 @_dryrun('create')
-def _create_snapshot(ec2, dryrun, **kwargs):
-    return ec2.create_snapshot(DryRun=dryrun, **kwargs)
+def _create_snapshot(ec2, dryrun, snapshot, **kwargs):
+    response = ec2.create_snapshot(DryRun=dryrun, **kwargs)
+    ec2.create_tags(DryRun=dryrun,
+                    Resources=[response['SnapshotId']],
+                    Tags=[
+                        {
+                            'Key': 'Name',
+                            'Value': snapshot
+                        }
+                    ])
+    return response
 
 
 @_dryrun('delete')
-def _delete_snapshot(ec2, dryrun, **kwargs):
+def _delete_snapshot(ec2, dryrun, snapshot, **kwargs):
     return ec2.delete_snapshot(DryRun=dryrun, **kwargs)
