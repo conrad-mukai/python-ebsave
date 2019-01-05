@@ -15,7 +15,8 @@ setup(name='ebsave',
       packages=['ebsave'],
       install_requires=[
           'boto3',
-          'requests'
+          'requests',
+          'urllib3<=1.23;python_version<="2.7.6"'
       ],
       entry_points={'console_scripts': ['ebsave=ebsave:main']},
       zip_safe=False
