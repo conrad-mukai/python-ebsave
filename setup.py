@@ -9,7 +9,7 @@ from setuptools import setup
 if tuple(int(x) for x in platform.python_version().split('.')) <= (2, 7, 6):
     urllib3_spec = 'urllib3<=1.23'
 else:
-    urllib3_spec = 'urllib3'
+    urllib3_spec = 'urllib3>1.23'
 
 
 # packaging
