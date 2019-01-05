@@ -8,7 +8,7 @@ from setuptools import setup
 
 # packaging
 setup(name='ebsave',
-      version='0.1.1',
+      version='0.2.0',
       author='Conrad Mukai',
       author_email='conrad@mukai-home.net',
       url='https://github.com/conrad-mukai/python-ebsave',

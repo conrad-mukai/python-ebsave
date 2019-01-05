@@ -4,7 +4,7 @@ AWS EC2 API calls
 """
 
 # system imports
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, tzinfo
 import collections
 import heapq
 import socket
@@ -54,7 +54,7 @@ def get_volume_ids(ec2, instance_id, devices):
 def create_snapshots(ec2, hostname, volume_ids, dryrun):
     hostname = _get_hostname(hostname)
     description = "snapshot created by {}".format(PROGRAM_NAME)
-    for volume_id, device in volume_ids.items():
+    for volume_id, device in volume_ids.iteritems():
         tag = "{}:{}:{}".format(hostname, device,
                                 datetime.utcnow().strftime(_TIMESTAMP_FORMAT))
         LOGGER.info("creating snapshot %s for %s", tag, volume_id)
@@ -79,16 +79,30 @@ def delete_snapshots(ec2, volume_ids, retention, min_count, dryrun):
         _delete_snapshot(ec2, dryrun, snapshot_id, SnapshotId=snapshot_id)
 
 
+ZERO = timedelta(0)
+
+class UTC(tzinfo):
+
+    def utcoffset(self, dt):
+        return ZERO
+
+    def tzname(self, dt):
+        return "UTC"
+
+    def dst(self, dt):
+        return ZERO
+
+
 def _filter_snapshots_to_delete(response, retention, min_count):
     snapshot_ids = collections.defaultdict(list)
     for snapshot in response['Snapshots']:
         snapshot_ids[snapshot['VolumeId']].append((snapshot['SnapshotId'],
                                                    snapshot['StartTime']))
     old_snapshots = []
-    t = datetime.now(timezone.utc)
+    t = datetime.now(UTC())
     max_age = timedelta(days=retention)
     old_snapshot_count = 0
-    for volume_id, snapshots in snapshot_ids.items():
+    for volume_id, snapshots in snapshot_ids.iteritems():
         if len(snapshots) <= min_count:
             LOGGER.debug("retaining all snapshots for %s: number of snapshots "
                          "is less than or equal to %d", volume_id, min_count)
