@@ -6,11 +6,6 @@ ebsave packaging
 import platform
 from setuptools import setup
 
-if tuple(int(x) for x in platform.python_version().split('.')) <= (2, 7, 6):
-    urllib3_spec = 'urllib3<=1.23'
-else:
-    urllib3_spec = 'urllib3>1.23'
-
 
 # packaging
 setup(name='ebsave',
@@ -21,8 +16,7 @@ setup(name='ebsave',
       packages=['ebsave'],
       install_requires=[
           'boto3',
-          'requests',
-          urllib3_spec
+          'requests'
       ],
       entry_points={'console_scripts': ['ebsave=ebsave:main']},
       zip_safe=False
