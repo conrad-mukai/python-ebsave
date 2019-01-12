@@ -3,7 +3,6 @@ ebsave packaging
 """
 
 # system imports
-import platform
 from setuptools import setup
 
 
